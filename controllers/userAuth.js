@@ -74,8 +74,17 @@ const logout = (req, res) => {
   res.status(200).json({ message: "Logged out successfully" });
 };
 
+const checkAuth = (req, res) => {
+  try {
+    res.status(200).json({ user: req.user });
+  } catch {
+    res.status(401).json({ message: "Invalid token" });
+  }
+};
+
 module.exports = {
   register,
   login,
   logout,
+  checkAuth,
 };

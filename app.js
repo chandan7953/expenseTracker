@@ -2,10 +2,11 @@ const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
+const path = require("path");
 
 const userAuthRoutes = require("./routers/userAuthRoutes");
+const sequelize = require("./config/db");
 
-const { sequelize } = require("./models");
 dotenv.config();
 
 const app = express();
@@ -18,9 +19,13 @@ app.use(
   })
 );
 
-app.use("/api/", userAuthRoutes);
+// ✅ Serve static frontend files
+app.use(express.static(path.join(__dirname, "View", "pages")));
 
-// Sync Database
+// ✅ API routes
+app.use("/api", userAuthRoutes);
+
+// ✅ Database and server start
 sequelize
   .sync()
   .then(() => {
