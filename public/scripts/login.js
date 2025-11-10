@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
         email,
         password,
       });
-      window.location.href = "dashboard.html";
+      window.location.href = "/";
     } catch (error) {
       const message =
         error.response?.data?.message || "Something went wrong during login.";

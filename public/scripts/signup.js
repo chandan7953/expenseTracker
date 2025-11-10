@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
         { withCredentials: true }
       );
 
-      window.location.href = "home.html";
+      window.location.href = "/";
     } catch (error) {
       const message =
         error.response?.data?.message || "Something went wrong during signup.";

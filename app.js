@@ -20,8 +20,11 @@ app.use(
 );
 
 // ✅ Serve static frontend files
-app.use(express.static(path.join(__dirname, "View", "pages")));
-
+app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "views")));
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "views", "home.html"));
+});
 // ✅ API routes
 app.use("/api", userAuthRoutes);
 

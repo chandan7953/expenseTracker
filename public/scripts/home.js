@@ -6,10 +6,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // ✅ 1. Check if user is logged in
   try {
-    const response = await axios.get("http://localhost:5000/api/check-auth", {
+    const response = await axios.get("http://localhost:3000/api/check-auth", {
       withCredentials: true,
     });
-
     const user = response.data.user;
     userInfo.textContent = `Hello, ${user.username}!`;
     dashboardSection.classList.remove("hidden");
@@ -25,7 +24,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   logoutBtn.addEventListener("click", async () => {
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/logout",
+        "http://localhost:3000/api/logout",
         {},
         { withCredentials: true }
       );
