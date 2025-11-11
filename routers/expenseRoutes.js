@@ -10,8 +10,8 @@ const {
 const router = express.Router();
 
 router.post("/add", addExpense);
-router.post("/", getAllExpense);
-router.post("/edit", editExpense);
-router.post("/delete", deleteExpense);
+router.get("/", getAllExpense);
+router.put("/edit", editExpense);
+router.delete("/delete/:id", deleteExpense);
 
 module.exports = router;

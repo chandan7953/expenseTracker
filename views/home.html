@@ -23,7 +23,6 @@
     >
       <h3 class="text-xl font-semibold text-teal-600 mb-4">Add Expense</h3>
 
-      <!-- Inline Add Expense Form -->
       <form id="expenseForm" class="grid grid-cols-4 gap-4 items-end mb-8">
         <input
           type="number"
@@ -63,18 +62,13 @@
         </button>
       </form>
 
-      <!-- Expenses List -->
-      <ul id="expenseList" class="space-y-3 mb-8">
-        <!-- Dynamic expense items will appear here -->
-      </ul>
+      <ul id="expenseList" class="space-y-3 mb-8"></ul>
 
-      <!-- Pagination -->
       <nav id="pagination" class="flex justify-center mt-6">
         <ul class="flex space-x-2" id="paginationList"></ul>
       </nav>
     </section>
 
-    <!-- ✅ Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="./scripts/home.js"></script>
   </body>

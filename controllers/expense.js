@@ -1,6 +1,5 @@
 const { Expense } = require("../models");
 
-// ➕ Add Expense
 const addExpense = async (req, res) => {
   try {
     const { amount, description, category, userId } = req.body;
@@ -16,17 +15,16 @@ const addExpense = async (req, res) => {
   }
 };
 
-// 📄 Get All Expenses (with pagination)
 const getAllExpense = async (req, res) => {
   try {
-    const { userId } = req.body;
+    const userId = parseInt(req.query.userId);
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 5;
     const offset = (page - 1) * limit;
 
     const { count, rows: expenses } = await Expense.findAndCountAll({
       where: { userId },
-      order: [["createdAt", "DESC"]],
+      order: [["id", "DESC"]],
       limit,
       offset,
     });
@@ -45,7 +43,6 @@ const getAllExpense = async (req, res) => {
   }
 };
 
-// ✏️ Edit Expense (ID from body)
 const editExpense = async (req, res) => {
   try {
     const { id, amount, description, category } = req.body;
@@ -68,10 +65,9 @@ const editExpense = async (req, res) => {
   }
 };
 
-// 🗑️ Delete Expense (ID from body)
 const deleteExpense = async (req, res) => {
   try {
-    const { id } = req.body;
+    const { id } = req.params;
 
     const expense = await Expense.findByPk(id);
     if (!expense) {
