@@ -5,7 +5,8 @@ const cookieParser = require("cookie-parser");
 const path = require("path");
 
 const userAuthRoutes = require("./routers/userAuthRoutes");
-const sequelize = require("./config/db");
+const expenseRoutes = require("./routers/expenseRoutes");
+const { sequelize } = require("./models");
 
 dotenv.config();
 
@@ -25,9 +26,9 @@ app.use(express.static(path.join(__dirname, "views")));
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "views", "home.html"));
 });
-// ✅ API routes
-app.use("/api", userAuthRoutes);
 
+app.use("/api", userAuthRoutes);
+app.use("/api/expenses", expenseRoutes);
 // ✅ Database and server start
 sequelize
   .sync()
