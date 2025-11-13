@@ -7,7 +7,14 @@ const cashfree = new Cashfree(
   process.env.CASHFREE_SECRET_KEY
 );
 
-const createPaymentOrder = async (userId, amount, currency, orderId, phone) => {
+const createPaymentOrder = async (
+  userId,
+  amount,
+  currency,
+  orderId,
+  phone,
+  expiryMinutes = 60
+) => {
   try {
     const request = {
       order_amount: amount,
@@ -18,20 +25,22 @@ const createPaymentOrder = async (userId, amount, currency, orderId, phone) => {
         customer_phone: phone,
       },
       order_meta: {
-        return_url: `http://localhost:3000/home.html?order_id=${orderId}&tab=leaderboard`,
+        return_url: `${process.env.FRONTEND_URL}/home.html?order_id=${orderId}&tab=leaderboard`,
         payment_methods: "cc,dc,upi",
       },
-      order_expiry_time: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+      order_expiry_time: new Date(
+        Date.now() + expiryMinutes * 60 * 1000
+      ).toISOString(),
     };
 
     const response = await cashfree.PGCreateOrder(request);
     return response.data;
   } catch (error) {
     console.error(
-      "Failed to create Cashfree order:",
+      "Cashfree create order failed:",
       error.response?.data || error.message
     );
-    throw error;
+    throw new Error("Failed to create payment order");
   }
 };
 
@@ -40,22 +49,17 @@ const getPaymentStatus = async (orderId) => {
     const response = await cashfree.PGOrderFetchPayments(orderId);
     const payments = response.data;
 
-    let status;
-    if (payments.some((tx) => tx.payment_status === "SUCCESS")) {
-      status = "Success";
-    } else if (payments.some((tx) => tx.payment_status === "PENDING")) {
-      status = "Pending";
-    } else {
-      status = "Failure";
-    }
-
-    return status;
+    if (payments.some((tx) => tx.payment_status === "SUCCESS"))
+      return "Success";
+    if (payments.some((tx) => tx.payment_status === "PENDING"))
+      return "Pending";
+    return "Failure";
   } catch (error) {
     console.error(
-      "Failed to fetch payment status:",
+      "Cashfree fetch payment status failed:",
       error.response?.data || error.message
     );
-    throw error;
+    throw new Error("Failed to fetch payment status");
   }
 };
 

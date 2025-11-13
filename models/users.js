@@ -1,7 +1,9 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/db");
 
-const Users = sequelize.define("users", {
+const Users = sequelize.define(
+  "Users",
+  {
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
@@ -14,7 +16,7 @@ const Users = sequelize.define("users", {
     email: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true, 
+      unique: true,
     },
     phone: {
       type: DataTypes.STRING,
@@ -24,9 +26,13 @@ const Users = sequelize.define("users", {
       type: DataTypes.STRING,
       allowNull: false,
     },
+    expiryDate: {
+      type: DataTypes.DATE,
+      defaultValue: null,
+    },
   },
   {
-    timestamps: true, 
+    timestamps: true,
   }
 );
 

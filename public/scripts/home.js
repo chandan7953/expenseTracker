@@ -1,12 +1,26 @@
 document.addEventListener("DOMContentLoaded", async () => {
-  // -------------------- TAB LOGIC --------------------
   const dashboardSection = document.getElementById("dashboardSection");
   const proSection = document.getElementById("proSection");
   const homeTab = document.getElementById("homeTab");
   const leaderboardTab = document.getElementById("leaderboardTab");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const expenseForm = document.getElementById("expenseForm");
+  const expenseList = document.getElementById("expenseList");
+  const paginationList = document.getElementById("paginationList");
+  const buyProBtn = document.getElementById("buyProBtn");
+  const buyProCard = document.getElementById("buyProCard");
+  const leaderboard = document.getElementById("leaderboard");
+  const leaderboardList = document.getElementById("leaderboardList");
 
   const urlParams = new URLSearchParams(window.location.search);
+  let user = null;
+  let userId = null;
+  let isPro = false;
+  let currentPage = parseInt(urlParams.get("page") || "1");
+  let limit = parseInt(urlParams.get("limit") || "5");
+  let editId = null;
 
+  // -------------------- TAB LOGIC --------------------
   function setActive(tab) {
     [homeTab, leaderboardTab].forEach((btn) =>
       btn.classList.remove("border-b-2", "border-red-500", "pb-1")
@@ -18,22 +32,23 @@ document.addEventListener("DOMContentLoaded", async () => {
     dashboardSection.classList.remove("hidden");
     proSection.classList.add("hidden");
     setActive(homeTab);
-
     const page = urlParams.get("page") || "1";
     const limit = urlParams.get("limit") || "5";
-    const userId = urlParams.get("userId") || null;
-
+    const uid = urlParams.get("userId") || null;
     window.history.replaceState(
       {},
       "",
-      `/?tab=home&page=${page}&limit=${limit}&userId=${userId}`
+      `/?tab=home&page=${page}&limit=${limit}&userId=${uid}`
     );
   }
 
-  function showLeaderboard() {
+  async function showLeaderboard() {
     dashboardSection.classList.add("hidden");
     proSection.classList.remove("hidden");
     setActive(leaderboardTab);
+    if (isPro) {
+      await fetchLeaderboard();
+    }
     window.history.replaceState({}, "", `/?tab=leaderboard`);
   }
 
@@ -41,31 +56,24 @@ document.addEventListener("DOMContentLoaded", async () => {
   leaderboardTab.addEventListener("click", showLeaderboard);
 
   const activeTab = urlParams.get("tab") || "home";
-  if (activeTab === "leaderboard") showLeaderboard();
-  else showHome();
 
-  // -------------------- EXPENSE LOGIC --------------------
-  const logoutBtn = document.getElementById("logoutBtn");
-  const expenseForm = document.getElementById("expenseForm");
-  const expenseList = document.getElementById("expenseList");
-  const paginationList = document.getElementById("paginationList");
-
-  let userId = null;
-  let currentPage = parseInt(urlParams.get("page") || "1");
-  let limit = parseInt(urlParams.get("limit") || "5");
-  let editId = null;
-
+  // -------------------- FETCH AUTH --------------------
   try {
     const authRes = await axios.get("http://localhost:3000/api/check-auth", {
       withCredentials: true,
     });
-    userId = authRes.data.user.id;
-    fetchExpenses(currentPage, limit, userId);
+    user = authRes.data.user;
+    userId = user.id;
+    isPro = authRes.data.isPro;
   } catch {
     window.location.href = "login.html";
     return;
   }
 
+  if (activeTab === "leaderboard") showLeaderboard();
+  else showHome();
+
+  // -------------------- LOGOUT --------------------
   logoutBtn.addEventListener("click", async () => {
     try {
       await axios.post(
@@ -79,6 +87,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
+  // -------------------- EXPENSES --------------------
   expenseForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const amount = document.getElementById("amount").value;
@@ -126,8 +135,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   function renderExpenses(expenses) {
     expenseList.innerHTML = "";
-    if (!expenses.length)
-      return (expenseList.innerHTML = `<li class="text-center text-gray-500">No expenses found.</li>`);
+    if (!expenses.length) {
+      expenseList.innerHTML =
+        '<li class="text-center text-gray-500">No expenses found.</li>';
+      return;
+    }
     expenses.forEach((exp) => {
       const li = document.createElement("li");
       li.className =
@@ -200,57 +212,67 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
 
   window.deleteExpense = async function (id) {
-    if (!confirm("Are you sure?")) return;
     await axios.delete(`http://localhost:3000/api/expenses/delete/${id}`);
     fetchExpenses(currentPage, limit, userId);
   };
 
   // -------------------- BUY PRO --------------------
-  const buyProBtn = document.getElementById("buyProBtn");
-  const buyProCard = document.getElementById("buyProCard");
-  const leaderboard = document.getElementById("leaderboard");
-
-  async function loadProStatusAndUI() {
-    try {
-      const authRes = await axios.get("http://localhost:3000/api/check-auth", {
-        withCredentials: true,
-      });
-      const user = authRes.data.user;
-
-      const proRes = await axios.get(
-        `http://localhost:3000/api/payment/${user.id}`
-      );
-      if (proRes.data.isPro) {
-        if (buyProCard) buyProCard.classList.add("hidden");
-        if (leaderboard) leaderboard.classList.remove("hidden");
-      }
-    } catch (err) {
-      console.error("Pro check failed", err);
+  function updateProUI() {
+    if (isPro) {
+      if (buyProCard) buyProCard.classList.add("hidden");
+      if (leaderboard) leaderboard.classList.remove("hidden");
+    } else {
+      if (buyProCard) buyProCard.classList.remove("hidden");
+      if (leaderboard) leaderboard.classList.add("hidden");
     }
   }
 
-  // Check return from payment
+  async function fetchLeaderboard() {
+    try {
+      const res = await axios.get(
+        "http://localhost:3000/api/expenses/leaderboard",
+        { withCredentials: true }
+      );
+      const topUsers = res.data;
+      leaderboardList.innerHTML = "";
+      topUsers.forEach((u) => {
+        const li = document.createElement("li");
+        li.className = "flex justify-between p-3 border-b";
+        li.innerHTML = `<span>${u.username}</span><span>₹${u.totalExpense}</span>`;
+        leaderboardList.appendChild(li);
+      });
+    } catch (err) {
+      alert(err.response?.data?.message || "Cannot fetch leaderboard");
+    }
+  }
+
   const returnedOrderId = urlParams.get("order_id");
   if (returnedOrderId) {
     try {
-      const verifyRes = await axios.get(
+      await axios.get(
         `http://localhost:3000/api/payment/payment-status/${returnedOrderId}`,
         { withCredentials: true }
       );
-      alert(`Payment status: ${verifyRes.data.message}`);
+      alert("Payment verified");
       urlParams.delete("order_id");
       window.history.replaceState(
         {},
         "",
         `${window.location.pathname}?${urlParams.toString()}`
       );
-      loadProStatusAndUI();
-      showLeaderboard(); // show leaderboard after success
+      // Refresh Pro status
+      const authRes = await axios.get("http://localhost:3000/api/check-auth", {
+        withCredentials: true,
+      });
+      user = authRes.data.user;
+      isPro = authRes.data.isPro;
+      updateProUI();
+      showLeaderboard();
     } catch (err) {
       console.error("Payment verify failed", err);
     }
   } else {
-    loadProStatusAndUI();
+    updateProUI();
   }
 
   if (buyProBtn) {
@@ -258,7 +280,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       try {
         const res = await axios.post(
           "http://localhost:3000/api/payment/create",
-          { amount: 199, currency: "INR", phone: "9876543210" },
+          { amount: 199, currency: "INR", phone: user.phone },
           { withCredentials: true }
         );
         const { paymentSessionId } = res.data;
@@ -270,4 +292,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     });
   }
+
+  fetchExpenses(currentPage, limit, userId);
 });

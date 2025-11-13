@@ -10,10 +10,6 @@ const UserPro = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
-    isPro: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
     orderId: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -25,10 +21,6 @@ const UserPro = sequelize.define(
     paymentStatus: {
       type: DataTypes.ENUM("PENDING", "SUCCESS", "FAILED"),
       defaultValue: "PENDING",
-    },
-    expiryDate: {
-      type: DataTypes.DATE,
-      allowNull: true,
     },
     userId: {
       type: DataTypes.INTEGER,

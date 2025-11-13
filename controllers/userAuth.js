@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const Users = require("../models/Users");
+const { Users } = require("../models");
 const generateToken = require("../utils/generateToken");
 
 const register = async (req, res) => {
@@ -74,11 +74,39 @@ const logout = (req, res) => {
   res.status(200).json({ message: "Logged out successfully" });
 };
 
-const checkAuth = (req, res) => {
+const checkAuth = async (req, res) => {
   try {
-    res.status(200).json({ user: req.user });
-  } catch {
-    res.status(401).json({ message: "Invalid token" });
+    // req.user is already populated by your auth middleware
+    const user = await Users.findByPk(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    let isPro = false;
+
+    if (user.expiryDate) {
+      const now = new Date();
+      if (new Date(user.expiryDate) > now) {
+        isPro = true; // Pro plan is active
+      } else {
+        // Expired → reset expiryDate
+        await user.update({ expiryDate: null });
+      }
+    }
+
+    res.status(200).json({
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        phone: user.phone,
+      },
+      isPro,
+      expiryDate: user.expiryDate,
+    });
+  } catch (error) {
+    console.error("Error in checkAuth:", error);
+    res.status(500).json({ message: "Failed to verify user" });
   }
 };
 
