@@ -30,7 +30,7 @@ app.get("/", (req, res) => {
 
 app.use("/api", userAuthRoutes);
 app.use("/api/expenses", expenseRoutes);
-app.use("/api/pay", paymentRoutes);
+app.use("/api/payment", paymentRoutes);
 // ✅ Database and server start
 sequelize
   .sync()

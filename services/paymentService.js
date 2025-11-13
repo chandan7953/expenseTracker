@@ -18,14 +18,13 @@ const createPaymentOrder = async (userId, amount, currency, orderId, phone) => {
         customer_phone: phone,
       },
       order_meta: {
-        return_url: `http://localhost:3000/api/payment-status/${orderId}`,
+        return_url: `http://localhost:3000/home.html?order_id=${orderId}&tab=leaderboard`,
         payment_methods: "cc,dc,upi",
       },
       order_expiry_time: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
     };
 
     const response = await cashfree.PGCreateOrder(request);
-    console.log("Cashfree order created:", response.data);
     return response.data;
   } catch (error) {
     console.error(
@@ -50,7 +49,6 @@ const getPaymentStatus = async (orderId) => {
       status = "Failure";
     }
 
-    console.log(`Order ${orderId} status: ${status}`);
     return status;
   } catch (error) {
     console.error(

@@ -30,6 +30,8 @@
         Logout
       </button>
     </nav>
+
+    <!-- Dashboard Section -->
     <section
       id="dashboardSection"
       class="max-w-4xl mx-auto bg-white shadow-xl rounded-2xl mt-10 p-8"
@@ -78,11 +80,12 @@
         <ul class="flex space-x-2" id="paginationList"></ul>
       </nav>
     </section>
+
+    <!-- Pro Section -->
     <section
       id="proSection"
       class="max-w-4xl mx-auto bg-white shadow-xl rounded-2xl mt-10 p-8"
     >
-      <!-- Buy Pro card (visible if not Pro) -->
       <div id="buyProCard" class="text-center">
         <h3 class="text-2xl font-semibold text-teal-700 mb-3">
           Unlock Pro Features 🚀
@@ -97,46 +100,17 @@
           Buy Pro
         </button>
       </div>
-      <!-- Leaderboard (visible if Pro) -->
-      <div id="leaderboard" class="">
+      <div id="leaderboard">
         <h3 class="text-2xl font-semibold text-teal-700 mb-6 text-center">
           🏆 Top 10 Users by Total Expense
         </h3>
         <ul id="leaderboardList" class="divide-y divide-gray-200"></ul>
       </div>
     </section>
-    <script>
-      const dashboardSection = document.getElementById("dashboardSection");
-      const proSection = document.getElementById("proSection");
-      const homeTab = document.getElementById("homeTab");
-      const leaderboardTab = document.getElementById("leaderboardTab");
 
-      dashboardSection.classList.remove("hidden");
-      proSection.classList.add("hidden");
-
-      function setActive(tab) {
-        [homeTab, leaderboardTab].forEach((btn) =>
-          btn.classList.remove("border-b-2", "border-red-500", "pb-1")
-        );
-        tab.classList.add("border-b-2", "border-red-500", "pb-1");
-      }
-
-      homeTab.addEventListener("click", () => {
-        dashboardSection.classList.remove("hidden");
-        proSection.classList.add("hidden");
-        setActive(homeTab);
-      });
-
-      leaderboardTab.addEventListener("click", () => {
-        dashboardSection.classList.add("hidden");
-        proSection.classList.remove("hidden");
-        setActive(leaderboardTab);
-      });
-
-      setActive(homeTab);
-    </script>
-
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
     <script src="./scripts/home.js"></script>
   </body>
 </html>

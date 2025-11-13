@@ -1,4 +1,5 @@
-const { Expense } = require("../models");
+const { Op, fn, col, literal } = require("sequelize");
+const { Users, Expense, UserPro } = require("../models");
 
 const addExpense = async (req, res) => {
   try {
@@ -83,9 +84,56 @@ const deleteExpense = async (req, res) => {
   }
 };
 
+const getTopUsers = async (req, res) => {
+  try {
+    const { userId } = req.query;
+    const today = new Date();
+
+    // 1️⃣ Check if current user has a valid Pro subscription
+    const currentUserPro = await UserPro.findOne({
+      where: {
+        userId,
+        paymentStatus: "SUCCESS",
+        expiryDate: { [Op.gte]: today },
+      },
+    });
+
+    if (!currentUserPro) {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. Pro membership required to view leaderboard.",
+      });
+    }
+
+    // 2️⃣ Get top 10 users by total expense (regardless of Pro status)
+    const topUsers = await Users.findAll({
+      attributes: [
+        "id",
+        "username",
+        [fn("SUM", col("Expenses.amount")), "totalExpense"],
+      ],
+      include: [
+        {
+          model: Expense,
+          attributes: [],
+        },
+      ],
+      group: ["users.id"],
+      order: [[literal("totalExpense"), "DESC"]],
+      limit: 10,
+    });
+
+    res.status(200).json({ success: true, topUsers });
+  } catch (error) {
+    console.error("Error fetching leaderboard:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
 module.exports = {
   addExpense,
   getAllExpense,
   editExpense,
   deleteExpense,
+  getTopUsers,
 };
