@@ -30,6 +30,10 @@ const Users = sequelize.define(
       type: DataTypes.DATE,
       defaultValue: null,
     },
+    totalExpense: {
+      type: DataTypes.FLOAT,
+      defaultValue: 0,
+    },
   },
   {
     timestamps: true,

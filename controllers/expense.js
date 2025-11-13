@@ -1,15 +1,21 @@
-const { fn, col } = require("sequelize");
 const { Users, Expense } = require("../models");
 
 const addExpense = async (req, res) => {
   try {
     const { amount, description, category, userId } = req.body;
+
     const expense = await Expense.create({
       amount,
       description,
       category,
       userId,
     });
+    const user = await Users.findByPk(userId);
+    if (user) {
+      user.totalExpense += parseFloat(amount);
+      await user.save();
+    }
+
     res.status(201).json(expense);
   } catch {
     res.status(500).json({ error: "Failed to add expense" });
@@ -43,17 +49,25 @@ const getAllExpense = async (req, res) => {
 
 const editExpense = async (req, res) => {
   try {
-    const { id, amount, description, category } = req.body;
+    const { id, amount, description, category } = req.body; // keep all fields
     const expense = await Expense.findByPk(id);
+
     if (!expense) return res.status(404).json({ error: "Expense not found" });
 
-    Object.assign(expense, {
-      amount: amount ?? expense.amount,
-      description: description ?? expense.description,
-      category: category ?? expense.category,
-    });
+    const oldAmount = parseFloat(expense.amount);
+    const newAmount = parseFloat(amount);
 
+    expense.amount = newAmount;
+    expense.description = description;
+    expense.category = category;
     await expense.save();
+
+    const user = await Users.findByPk(expense.userId);
+    if (user) {
+      user.totalExpense = user.totalExpense - oldAmount + newAmount;
+      await user.save();
+    }
+
     res.status(200).json({ message: "Expense updated successfully", expense });
   } catch {
     res.status(500).json({ error: "Failed to update expense" });
@@ -66,7 +80,16 @@ const deleteExpense = async (req, res) => {
     const expense = await Expense.findByPk(id);
     if (!expense) return res.status(404).json({ error: "Expense not found" });
 
+    const amount = parseFloat(expense.amount);
     await expense.destroy();
+
+    const user = await Users.findByPk(expense.userId);
+    if (user) {
+      user.totalExpense -= amount;
+      if (user.totalExpense < 0) user.totalExpense = 0;
+      await user.save();
+    }
+
     res.status(200).json({ message: "Expense deleted successfully" });
   } catch {
     res.status(500).json({ error: "Failed to delete expense" });
@@ -79,19 +102,15 @@ const getLeaderboard = async (req, res) => {
     if (!user?.expiryDate || new Date(user.expiryDate) <= new Date())
       return res.status(403).json({ message: "Access denied" });
 
-    const topUsers = await Expense.findAll({
-      attributes: ["userId", [fn("SUM", col("amount")), "totalExpenses"]],
-      include: [{ model: Users, attributes: ["username"] }],
-      group: ["userId", "User.id"],
-      order: [[fn("SUM", col("amount")), "DESC"]],
+    const topUsers = await Users.findAll({
+      attributes: ["username", "totalExpense"],
+      order: [["totalExpense", "DESC"]],
       limit: 10,
-      raw: true,
-      nest: true,
     });
 
     const leaderboard = topUsers.map((u) => ({
-      username: u.User.username,
-      totalExpenses: parseFloat(u.totalExpenses).toFixed(2),
+      username: u.username,
+      totalExpenses: parseFloat(u.totalExpense).toFixed(2),
     }));
 
     res.status(200).json(leaderboard);
