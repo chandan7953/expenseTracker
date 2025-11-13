@@ -234,11 +234,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         { withCredentials: true }
       );
       const topUsers = res.data;
+      console.log(topUsers);
       leaderboardList.innerHTML = "";
       topUsers.forEach((u) => {
         const li = document.createElement("li");
         li.className = "flex justify-between p-3 border-b";
-        li.innerHTML = `<span>${u.username}</span><span>₹${u.totalExpense}</span>`;
+        li.innerHTML = `<span>${u.username}</span><span>₹${u.totalExpenses}</span>`;
         leaderboardList.appendChild(li);
       });
     } catch (err) {

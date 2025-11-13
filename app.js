@@ -21,7 +21,6 @@ app.use(
   })
 );
 
-// ✅ Serve static frontend files
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.static(path.join(__dirname, "views")));
 app.get("/", (req, res) => {
@@ -31,7 +30,7 @@ app.get("/", (req, res) => {
 app.use("/api", userAuthRoutes);
 app.use("/api/expenses", expenseRoutes);
 app.use("/api/payment", paymentRoutes);
-// ✅ Database and server start
+
 sequelize
   .sync()
   .then(() => {

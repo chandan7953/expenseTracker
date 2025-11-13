@@ -8,14 +8,10 @@ const register = async (req, res) => {
     const { username, email, phone, password } = req.body;
 
     const existing = await Users.findOne({ where: { email } });
-    if (existing) {
-      return res.status(400).json({
-        message: "Email already registered",
-      });
-    }
+    if (existing)
+      return res.status(400).json({ message: "Email already registered" });
 
     const hashPass = await bcrypt.hash(password, 10);
-
     const user = await Users.create({
       username,
       email,
@@ -24,21 +20,15 @@ const register = async (req, res) => {
     });
 
     const token = generateToken(user);
-    res.cookie("token", token, {
-      httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000,
-    });
+    res.cookie("token", token, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 });
 
     res.status(201).json({
-      message: "user registered Successfully",
+      message: "User registered successfully",
       token,
       user,
     });
-  } catch (err) {
-    res.status(500).json({
-      message: "Error registering in",
-      error: err.message,
-    });
+  } catch {
+    res.status(500).json({ message: "Failed to register user" });
   }
 };
 
@@ -46,26 +36,18 @@ const login = async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await Users.findOne({ where: { email } });
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+    if (!user) return res.status(404).json({ message: "User not found" });
+
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
+    if (!isMatch)
       return res.status(401).json({ message: "Invalid credentials" });
-    }
 
     const token = generateToken(user);
-    res.cookie("token", token, {
-      httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000,
-    });
+    res.cookie("token", token, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 });
 
-    res.status(200).json({ message: "Login successful" });
-  } catch (err) {
-    res.status(500).json({
-      message: "Error login in",
-      error: err.message,
-    });
+    res.status(200).json({ message: "Login successful", token });
+  } catch {
+    res.status(500).json({ message: "Failed to login" });
   }
 };
 
@@ -76,20 +58,16 @@ const logout = (req, res) => {
 
 const checkAuth = async (req, res) => {
   try {
-    // req.user is already populated by your auth middleware
     const user = await Users.findByPk(req.user.id);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+    if (!user) return res.status(404).json({ message: "User not found" });
 
     let isPro = false;
+    const now = new Date();
 
     if (user.expiryDate) {
-      const now = new Date();
       if (new Date(user.expiryDate) > now) {
-        isPro = true; // Pro plan is active
+        isPro = true;
       } else {
-        // Expired → reset expiryDate
         await user.update({ expiryDate: null });
       }
     }
@@ -104,8 +82,7 @@ const checkAuth = async (req, res) => {
       isPro,
       expiryDate: user.expiryDate,
     });
-  } catch (error) {
-    console.error("Error in checkAuth:", error);
+  } catch {
     res.status(500).json({ message: "Failed to verify user" });
   }
 };
