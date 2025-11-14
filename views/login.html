@@ -19,13 +19,21 @@
           required
         />
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-          required
-        />
+        <div class="flex flex-col">
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+            required
+          />
+          <a
+            href="forgotpassword.html"
+            class="text-sm text-teal-600 mt-2 hover:underline self-end"
+          >
+            Forgot Password?
+          </a>
+        </div>
 
         <button
           type="submit"
@@ -40,8 +48,9 @@
         <a
           href="signup.html"
           class="text-teal-600 font-semibold hover:underline"
-          >Sign up</a
         >
+          Sign up
+        </a>
       </p>
     </div>
 

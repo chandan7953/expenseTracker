@@ -1,5 +1,6 @@
 const sequelize = require("../config/db");
 const Expense = require("./Expense");
+const ForgotPasswordRequests = require("./ForgotPasswordRequests");
 const UserPro = require("./UserPro");
 const Users = require("./Users");
 
@@ -9,4 +10,10 @@ Expense.belongsTo(Users, { foreignKey: "userId" });
 UserPro.belongsTo(Users, { foreignKey: "userId", onDelete: "CASCADE" });
 Users.hasOne(UserPro, { foreignKey: "userId" });
 
-module.exports = { sequelize, Users, Expense, UserPro };
+ForgotPasswordRequests.belongsTo(Users, {
+  foreignKey: "userId",
+  onDelete: "CASCADE",
+});
+Users.hasMany(ForgotPasswordRequests, { foreignKey: "userId" });
+
+module.exports = { sequelize, Users, Expense, UserPro, ForgotPasswordRequests };
