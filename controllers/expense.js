@@ -1,23 +1,26 @@
-const { Users, Expense } = require("../models");
+const { Users, Expense, sequelize } = require("../models");
 
 const addExpense = async (req, res) => {
+  const t = await sequelize.transaction();
   try {
     const { amount, description, category, userId } = req.body;
 
-    const expense = await Expense.create({
-      amount,
-      description,
-      category,
-      userId,
-    });
-    const user = await Users.findByPk(userId);
+    const expense = await Expense.create(
+      { amount, description, category, userId },
+      { transaction: t }
+    );
+
+    const user = await Users.findByPk(userId, { transaction: t });
     if (user) {
       user.totalExpense += parseFloat(amount);
-      await user.save();
+      await user.save({ transaction: t });
     }
 
+    await t.commit();
     res.status(201).json(expense);
-  } catch {
+  } catch (err) {
+    await t.rollback();
+    console.error(err);
     res.status(500).json({ error: "Failed to add expense" });
   }
 };
@@ -48,11 +51,15 @@ const getAllExpense = async (req, res) => {
 };
 
 const editExpense = async (req, res) => {
+  const t = await sequelize.transaction();
   try {
-    const { id, amount, description, category } = req.body; // keep all fields
-    const expense = await Expense.findByPk(id);
+    const { id, amount, description, category } = req.body;
+    const expense = await Expense.findByPk(id, { transaction: t });
 
-    if (!expense) return res.status(404).json({ error: "Expense not found" });
+    if (!expense) {
+      await t.rollback();
+      return res.status(404).json({ error: "Expense not found" });
+    }
 
     const oldAmount = parseFloat(expense.amount);
     const newAmount = parseFloat(amount);
@@ -60,38 +67,48 @@ const editExpense = async (req, res) => {
     expense.amount = newAmount;
     expense.description = description;
     expense.category = category;
-    await expense.save();
+    await expense.save({ transaction: t });
 
-    const user = await Users.findByPk(expense.userId);
+    const user = await Users.findByPk(expense.userId, { transaction: t });
     if (user) {
       user.totalExpense = user.totalExpense - oldAmount + newAmount;
-      await user.save();
+      await user.save({ transaction: t });
     }
 
+    await t.commit();
     res.status(200).json({ message: "Expense updated successfully", expense });
-  } catch {
+  } catch (err) {
+    await t.rollback();
+    console.error(err);
     res.status(500).json({ error: "Failed to update expense" });
   }
 };
 
 const deleteExpense = async (req, res) => {
+  const t = await sequelize.transaction();
   try {
     const { id } = req.params;
-    const expense = await Expense.findByPk(id);
-    if (!expense) return res.status(404).json({ error: "Expense not found" });
+    const expense = await Expense.findByPk(id, { transaction: t });
+    if (!expense) {
+      await t.rollback();
+      return res.status(404).json({ error: "Expense not found" });
+    }
 
     const amount = parseFloat(expense.amount);
-    await expense.destroy();
+    await expense.destroy({ transaction: t });
 
-    const user = await Users.findByPk(expense.userId);
+    const user = await Users.findByPk(expense.userId, { transaction: t });
     if (user) {
       user.totalExpense -= amount;
       if (user.totalExpense < 0) user.totalExpense = 0;
-      await user.save();
+      await user.save({ transaction: t });
     }
 
+    await t.commit();
     res.status(200).json({ message: "Expense deleted successfully" });
-  } catch {
+  } catch (err) {
+    await t.rollback();
+    console.error(err);
     res.status(500).json({ error: "Failed to delete expense" });
   }
 };

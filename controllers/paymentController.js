@@ -2,7 +2,7 @@ const {
   createPaymentOrder,
   getPaymentStatus,
 } = require("../services/paymentService");
-const { UserPro, Users } = require("../models");
+const { UserPro, Users, sequelize } = require("../models");
 
 exports.createOrder = async (req, res) => {
   try {
@@ -31,40 +31,57 @@ exports.createOrder = async (req, res) => {
       orderId: orderData.order_id,
       paymentSessionId: orderData.payment_session_id,
     });
-  } catch {
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ success: false, message: "Failed to create order" });
   }
 };
 
 exports.verifyPayment = async (req, res) => {
+  const t = await sequelize.transaction();
   try {
     const { orderId } = req.params;
     const status = await getPaymentStatus(orderId);
-    const userPro = await UserPro.findOne({ where: { orderId } });
+    const userPro = await UserPro.findOne({
+      where: { orderId },
+      transaction: t,
+    });
 
-    if (!userPro)
+    if (!userPro) {
+      await t.rollback();
       return res
         .status(404)
         .json({ success: false, message: "Order not found" });
+    }
 
     if (status === "Success") {
       const expiryDate = new Date();
       expiryDate.setDate(expiryDate.getDate() + 30);
 
       await Promise.all([
-        userPro.update({ paymentStatus: "SUCCESS" }),
-        Users.update({ expiryDate }, { where: { id: userPro.userId } }),
+        userPro.update({ paymentStatus: "SUCCESS" }, { transaction: t }),
+        Users.update(
+          { expiryDate },
+          { where: { id: userPro.userId }, transaction: t }
+        ),
       ]);
     } else {
-      await userPro.update({ paymentStatus: status.toUpperCase() });
+      await userPro.update(
+        { paymentStatus: status.toUpperCase() },
+        { transaction: t }
+      );
     }
+
+    await t.commit();
 
     res.status(200).json({
       success: true,
       message: `Payment ${status}`,
       data: userPro,
     });
-  } catch {
+  } catch (err) {
+    await t.rollback();
+    console.error(err);
     res
       .status(500)
       .json({ success: false, message: "Failed to verify payment" });
@@ -90,7 +107,8 @@ exports.getUserProStatus = async (req, res) => {
       isPro: isProActive,
       expiryDate: user.expiryDate || null,
     });
-  } catch {
+  } catch (err) {
+    console.error(err);
     res
       .status(500)
       .json({ success: false, message: "Failed to fetch Pro status" });
