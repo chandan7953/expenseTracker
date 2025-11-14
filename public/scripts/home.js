@@ -294,5 +294,35 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
+  // -------------------- AI CATEGORY SUGGEST --------------------
+  const aiSuggestBtn = document.getElementById("aiSuggestBtn");
+  if (aiSuggestBtn) {
+    aiSuggestBtn.addEventListener("click", async () => {
+      const description = document.getElementById("description").value.trim();
+      if (!description) return alert("Enter a description first");
+
+      aiSuggestBtn.disabled = true;
+      aiSuggestBtn.textContent = "Thinking...";
+
+      try {
+        const { data } = await axios.post(
+          "http://localhost:3000/api/suggest-category",
+          { description }
+        );
+        if (data?.category) {
+          document.getElementById("category").value = data.category;
+        } else {
+          alert("AI could not suggest a category");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Failed to get AI suggestion");
+      } finally {
+        aiSuggestBtn.disabled = false;
+        aiSuggestBtn.textContent = "AI Auto-Category";
+      }
+    });
+  }
+
   fetchExpenses(currentPage, limit, userId);
 });
