@@ -7,6 +7,7 @@ const path = require("path");
 const userAuthRoutes = require("./routers/userAuthRoutes");
 const expenseRoutes = require("./routers/expenseRoutes");
 const paymentRoutes = require("./routers/paymentRoutes");
+const aiCategoryRoutes = require("./routers/aiCategoryRoutes");
 const { sequelize } = require("./models");
 
 dotenv.config();
@@ -30,7 +31,7 @@ app.get("/", (req, res) => {
 app.use("/api", userAuthRoutes);
 app.use("/api/expenses", expenseRoutes);
 app.use("/api/payment", paymentRoutes);
-
+app.use("/api", aiCategoryRoutes);
 sequelize
   .sync()
   .then(() => {
