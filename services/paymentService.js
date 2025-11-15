@@ -13,6 +13,7 @@ const createPaymentOrder = async (
   currency,
   orderId,
   phone,
+  tab,
   expiryMinutes = 60
 ) => {
   try {
@@ -25,7 +26,7 @@ const createPaymentOrder = async (
         customer_phone: phone,
       },
       order_meta: {
-        return_url: `${process.env.FRONTEND_URL}/home.html?order_id=${orderId}&tab=leaderboard`,
+        return_url: `${process.env.FRONTEND_URL}/?tab=${tab}&order_id=${orderId}`,
         payment_methods: "cc,dc,upi",
       },
       order_expiry_time: new Date(

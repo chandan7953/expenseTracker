@@ -26,7 +26,7 @@ app.use(
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.static(path.join(__dirname, "views")));
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "views", "home.html"));
+  res.sendFile(path.join(__dirname, "views", "index.html"));
 });
 
 app.use("/api", userAuthRoutes);

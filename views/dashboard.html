@@ -1,0 +1,75 @@
+<section id="dashboardSection">
+  <h3 class="text-xl font-semibold text-teal-600 mb-4">Add Expense</h3>
+  <form id="expenseForm" class="grid grid-cols-6 gap-4 mb-8">
+    <input
+      type="number"
+      id="amount"
+      name="amount"
+      placeholder="Amount"
+      class="col-span-1 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-teal-500 outline-none"
+      required
+    />
+    <div class="col-span-3 flex">
+      <input
+        type="text"
+        id="description"
+        name="description"
+        placeholder="Description"
+        class="flex-1 border border-r-0 rounded-l-lg px-3 py-2 focus:ring-2 focus:ring-teal-500 outline-none"
+        required
+      />
+      <button
+        type="button"
+        id="aiSuggestBtn"
+        class="bg-teal-600 text-white px-4 py-2 rounded-r-lg hover:bg-teal-700 transition"
+      >
+        AI Auto-Category
+      </button>
+    </div>
+    <select
+      id="category"
+      name="category"
+      class="col-span-2 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-teal-500 outline-none"
+      required
+    >
+      <option value="">Category</option>
+      <option value="Food">Food</option>
+      <option value="Transport">Transport</option>
+      <option value="Groceries">Groceries</option>
+      <option value="Entertainment">Entertainment</option>
+      <option value="Utilities">Utilities</option>
+      <option value="Shopping">Shopping</option>
+      <option value="Health">Health</option>
+      <option value="Rent">Rent</option>
+      <option value="Income">Income</option>
+      <option value="Other">Other</option>
+    </select>
+    <button
+      type="submit"
+      class="col-span-6 bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2 rounded-lg transition"
+    >
+      Add
+    </button>
+  </form>
+
+  <div class="flex justify-end items-center gap-2 mb-4">
+    <label for="limitSelector" class="text-gray-700 font-medium"> Show: </label>
+
+    <select
+      id="limitSelector"
+      class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-teal-500 outline-none"
+    >
+      <option value="5">5</option>
+      <option value="10">10</option>
+      <option value="20">20</option>
+      <option value="50">50</option>
+    </select>
+
+    <span class="text-gray-700 font-medium">per page</span>
+  </div>
+
+  <ul id="expenseList" class="space-y-3 mb-8"></ul>
+  <nav id="pagination" class="flex justify-center mt-6">
+    <ul class="flex space-x-2" id="paginationList"></ul>
+  </nav>
+</section>

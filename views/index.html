@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard | Expense Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  </head>
+  <body class="min-h-screen bg-teal-50">
+    <!-- Navbar -->
+    <nav class="bg-teal-700 p-4 flex justify-between items-center text-white">
+      <div class="flex items-center space-x-6">
+        <h1 class="text-xl font-bold">Expense Tracker</h1>
+        <button
+          id="homeTab"
+          class="font-medium hover:text-gray-200 focus:outline-none"
+        >
+          Home
+        </button>
+        <button
+          id="leaderboardTab"
+          class="font-medium hover:text-gray-200 focus:outline-none"
+        >
+          Leaderboard
+        </button>
+        <button
+          id="reportTab"
+          class="font-medium hover:text-gray-200 focus:outline-none"
+        >
+          Report
+        </button>
+      </div>
+      <button
+        id="logoutBtn"
+        class="bg-white text-teal-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-all"
+      >
+        Logout
+      </button>
+    </nav>
+
+    <!-- Dynamic content container -->
+    <div id="content" class="max-w-4xl mx-auto mt-10"></div>
+
+    <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
+    <script src="./scripts/main.js"></script>
+  </body>
+</html>

@@ -6,7 +6,7 @@ const { UserPro, Users, sequelize } = require("../models");
 
 exports.createOrder = async (req, res) => {
   try {
-    const { amount, currency, phone } = req.body;
+    const { amount, currency, phone, tab } = req.body;
     const user = req.user;
     const orderId = "order_" + Date.now();
 
@@ -15,7 +15,8 @@ exports.createOrder = async (req, res) => {
       amount,
       currency,
       orderId,
-      phone
+      phone,
+      tab
     );
 
     await UserPro.create({
