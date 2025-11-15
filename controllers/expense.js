@@ -1,4 +1,5 @@
 const { Users, Expense, sequelize } = require("../models");
+const { Op } = require("sequelize");
 
 const addExpense = async (req, res) => {
   const t = await sequelize.transaction();
@@ -136,10 +137,60 @@ const getLeaderboard = async (req, res) => {
   }
 };
 
+const getExpensesByDate = async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+    const userId = req.user.id;
+
+    const user = await Users.findByPk(userId);
+
+    if (!user?.expiryDate || new Date(user.expiryDate) <= new Date())
+      return res.status(403).json({ message: "Access denied" });
+
+    if (!startDate || !endDate || !userId) {
+      return res.status(400).json({
+        status: false,
+        message: "startDate, endDate and userId are required",
+      });
+    }
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    // Include end of day
+    end.setHours(23, 59, 59, 999);
+    const expenses = await Expense.findAll({
+      where: {
+        userId,
+        createdAt: {
+          [Op.between]: [start, end],
+        },
+      },
+      order: [["createdAt", "ASC"]],
+    });
+
+    return res.status(200).json({
+      status: true,
+      count: expenses.length,
+      expenses,
+    });
+  } catch (error) {
+    console.error("Expense fetch error:", error);
+
+    // 🔴 Server Error
+    return res.status(500).json({
+      status: false,
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   addExpense,
   getAllExpense,
   editExpense,
   deleteExpense,
   getLeaderboard,
+  getExpensesByDate,
 };

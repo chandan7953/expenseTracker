@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Expense Filter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 min-h-screen p-6">
+    <div class="max-w-4xl mx-auto bg-white p-6 rounded-xl shadow-lg">
+      <h1 class="text-2xl font-bold text-teal-700 mb-4">Expense Filter</h1>
+
+      <!-- Date Filter -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="font-semibold text-gray-700">Start Date</label>
+          <input
+            type="date"
+            id="startDate"
+            class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-teal-500"
+          />
+        </div>
+
+        <div>
+          <label class="font-semibold text-gray-700">End Date</label>
+          <input
+            type="date"
+            id="endDate"
+            class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-teal-500"
+          />
+        </div>
+
+        <div class="flex items-end">
+          <button
+            id="filterBtn"
+            class="w-full bg-teal-600 text-white p-3 rounded-lg hover:bg-teal-700 transition"
+          >
+            Filter
+          </button>
+        </div>
+      </div>
+
+      <!-- Loader -->
+      <div
+        id="loader"
+        class="hidden text-center mt-4 text-teal-600 font-semibold"
+      >
+        Loading...
+      </div>
+
+      <!-- Table -->
+      <div class="mt-6 overflow-x-auto" id="tableWrapper">
+        <table class="w-full border-collapse">
+          <thead>
+            <tr class="bg-teal-600 text-white text-center">
+              <th class="p-3">Date</th>
+              <th class="p-3">Amount</th>
+              <th class="p-3">Description</th>
+              <th class="p-3">Category</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody" class="text-gray-700 text-center"></tbody>
+        </table>
+      </div>
+
+      <h2 id="total" class="text-right font-bold mt-4"></h2>
+
+      <button
+        id="downloadBtn"
+        class="mt-4 bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700"
+      >
+        Download PDF
+      </button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <script>
+      // Format date local
+      function formatDateLocal(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+      }
+
+      // Default date range: previous month 1st → today
+      const today = new Date();
+      const previousMonthFirst = new Date(
+        today.getFullYear(),
+        today.getMonth() - 1,
+        1
+      );
+      document.getElementById("startDate").value =
+        formatDateLocal(previousMonthFirst);
+      document.getElementById("endDate").value = formatDateLocal(today);
+
+      // Render Table
+      function renderTable(data) {
+        const body = document.getElementById("tableBody");
+        body.innerHTML = "";
+        let total = 0;
+        let lastDate = null;
+
+        if (!data || data.length === 0) {
+          body.innerHTML = `<tr><td colspan="4" class="p-4 text-gray-500 text-center">No records found</td></tr>`;
+          document.getElementById("total").textContent = "Total: ₹0";
+          return;
+        }
+
+        data.forEach((item, i) => {
+          const date = item.createdAt.slice(0, 10);
+
+          // Insert blank row if date changes (except first)
+          if (lastDate && date !== lastDate) {
+            body.innerHTML += `<tr class="border-b"><td colspan="4" class="p-2"></td></tr>`;
+          }
+
+          body.innerHTML += `
+            <tr class="border-b">
+              <td class="p-3">${date}</td>
+              <td class="p-3">₹${item.amount}</td>
+              <td class="p-3">${item.description}</td>
+              <td class="p-3">${item.category}</td>
+            </tr>
+          `;
+
+          total += item.amount;
+          lastDate = date;
+        });
+
+        document.getElementById("total").textContent = `Total: ₹${total}`;
+      }
+
+      // Fetch API Data
+      async function loadExpenses() {
+        const startDate = document.getElementById("startDate").value;
+        const endDate = document.getElementById("endDate").value;
+        const userId = 2; // Replace with actual logged-in userId or token data
+
+        document.getElementById("loader").classList.remove("hidden");
+
+        try {
+          const res = await axios.get(
+            "http://localhost:3000/api/expenses/getExpensesByDate",
+            {
+              params: { startDate, endDate },
+            }
+          );
+
+          renderTable(res.data.expenses);
+        } catch (error) {
+          console.error(error);
+          alert("Failed to fetch expenses");
+          renderTable([]);
+        }
+
+        document.getElementById("loader").classList.add("hidden");
+      }
+
+      document
+        .getElementById("filterBtn")
+        .addEventListener("click", loadExpenses);
+
+      // Load default data
+      loadExpenses();
+
+      // Download PDF
+      document.getElementById("downloadBtn").addEventListener("click", () => {
+        const tableWrapper = document.getElementById("tableWrapper");
+        const start = document.getElementById("startDate").value;
+        const end = document.getElementById("endDate").value;
+        const total = document.getElementById("total").textContent;
+
+        const wrapper = document.createElement("div");
+        wrapper.innerHTML = `
+          <h2 style="text-align:center; margin-bottom:15px; font-size:18px; font-weight:bold;">
+            Expense Report<br>From ${start} To ${end}
+          </h2>
+          ${tableWrapper.outerHTML}
+          <h3 style="text-align:right; margin-top:10px; font-weight:bold;">${total}</h3>
+        `;
+
+        html2pdf(wrapper, {
+          margin: [10, 10, 10, 10],
+          filename: `Expense_Report_${start}_to_${end}.pdf`,
+          html2canvas: { scale: 2 },
+          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+        });
+      });
+    </script>
+  </body>
+</html>
