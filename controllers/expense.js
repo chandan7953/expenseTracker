@@ -157,7 +157,6 @@ const getExpensesByDate = async (req, res) => {
     const start = new Date(startDate);
     const end = new Date(endDate);
 
-    // Include end of day
     end.setHours(23, 59, 59, 999);
     const expenses = await Expense.findAll({
       where: {
@@ -177,7 +176,6 @@ const getExpensesByDate = async (req, res) => {
   } catch (error) {
     console.error("Expense fetch error:", error);
 
-    // 🔴 Server Error
     return res.status(500).json({
       status: false,
       message: "Server error",
