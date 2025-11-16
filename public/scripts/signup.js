@@ -23,4 +23,20 @@ document.addEventListener("DOMContentLoaded", () => {
       alert(message);
     }
   });
+
+  async function redirectIfAuthenticated() {
+    try {
+      const authRes = await axios.get("http://localhost:3000/api/check-auth", {
+        withCredentials: true,
+      });
+
+      if (authRes.data.user.id) {
+        window.location.href = "/";
+      }
+    } catch (err) {
+      console.log("User not authenticated, can access page.");
+    }
+  }
+
+  redirectIfAuthenticated();
 });

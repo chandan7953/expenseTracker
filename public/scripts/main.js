@@ -149,7 +149,7 @@ async function handleReturnedOrder() {
       withCredentials: true,
     });
     user = authRes.data.user;
-    userId = user.id;
+    userId = authRes.data.user.id;
     isPro = authRes.data.isPro;
 
     await handleReturnedOrder();
