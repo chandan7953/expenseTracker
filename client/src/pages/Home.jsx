@@ -7,7 +7,7 @@ function Home() {
 
   const [expenses, setExpenses] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
   const [limit, setLimit] = useState(5);
   const [editId, setEditId] = useState(null);
 
@@ -100,7 +100,11 @@ function Home() {
 
   const handleDelete = async (id) => {
     await api.delete(`/expenses/delete/${id}`);
-    fetchExpenses(currentPage, limit);
+    if (expenses.length === 1 && currentPage > 1) {
+      fetchExpenses(currentPage - 1, limit);
+    } else {
+      fetchExpenses(currentPage, limit);
+    }
   };
 
   return (
@@ -217,44 +221,46 @@ function Home() {
         ))}
       </ul>
 
-      <nav className="flex justify-center mt-6">
-        <ul className="flex space-x-2">
-          <li>
-            <button
-              disabled={currentPage === 1}
-              onClick={() => fetchExpenses(currentPage - 1, limit)}
-              className="px-3 py-1 rounded-lg bg-gray-200 text-teal-700 hover:bg-gray-300 disabled:opacity-50"
-            >
-              Prev
-            </button>
-          </li>
-
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((i) => (
-            <li key={i}>
+      {totalPages && (
+        <nav className="flex justify-center mt-6">
+          <ul className="flex space-x-2">
+            <li>
               <button
-                onClick={() => fetchExpenses(i, limit)}
-                className={`px-3 py-1 rounded-lg ${
-                  i === currentPage
-                    ? "bg-teal-600 text-white"
-                    : "bg-gray-200 text-teal-700 hover:bg-gray-300"
-                }`}
+                disabled={currentPage === 1}
+                onClick={() => fetchExpenses(currentPage - 1, limit)}
+                className="px-3 py-1 rounded-lg bg-gray-200 text-teal-700 hover:bg-gray-300 disabled:opacity-50"
               >
-                {i}
+                Prev
               </button>
             </li>
-          ))}
 
-          <li>
-            <button
-              disabled={currentPage === totalPages}
-              onClick={() => fetchExpenses(currentPage + 1, limit)}
-              className="px-3 py-1 rounded-lg bg-gray-200 text-teal-700 hover:bg-gray-300 disabled:opacity-50"
-            >
-              Next
-            </button>
-          </li>
-        </ul>
-      </nav>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((i) => (
+              <li key={i}>
+                <button
+                  onClick={() => fetchExpenses(i, limit)}
+                  className={`px-3 py-1 rounded-lg ${
+                    i === currentPage
+                      ? "bg-teal-600 text-white"
+                      : "bg-gray-200 text-teal-700 hover:bg-gray-300"
+                  }`}
+                >
+                  {i}
+                </button>
+              </li>
+            ))}
+
+            <li>
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() => fetchExpenses(currentPage + 1, limit)}
+                className="px-3 py-1 rounded-lg bg-gray-200 text-teal-700 hover:bg-gray-300 disabled:opacity-50"
+              >
+                Next
+              </button>
+            </li>
+          </ul>
+        </nav>
+      )}
     </section>
   );
 }
