@@ -20,7 +20,12 @@ const register = async (req, res) => {
     });
 
     const token = generateToken(user);
-    res.cookie("token", token, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 });
+    res.cookie("token", token, {
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000,
+      secure: false,
+      sameSite: "lax",
+    });
 
     res.status(201).json({
       message: "User registered successfully",
@@ -43,7 +48,12 @@ const login = async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
 
     const token = generateToken(user);
-    res.cookie("token", token, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 });
+    res.cookie("token", token, {
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000,
+      secure: false,
+      sameSite: "lax",
+    });
 
     res.status(200).json({ message: "Login successful", token });
   } catch {
