@@ -24,7 +24,8 @@ const register = async (req, res) => {
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000,
       secure: false,
-      sameSite: "none",
+      sameSite: "lax",
+      path: "/",
     });
 
     res.status(201).json({
@@ -52,7 +53,8 @@ const login = async (req, res) => {
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000,
       secure: false,
-      sameSite: "none",
+      sameSite: "lax",
+      path: "/",
     });
 
     res.status(200).json({ message: "Login successful", token });
