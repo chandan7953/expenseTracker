@@ -23,6 +23,12 @@ app.use(
   })
 );
 
+app.get("/", (req, res) => {
+  res.status(200).json({
+    message: "Welecome to server expense tracker",
+  });
+});
+
 app.use("/api", userAuthRoutes);
 app.use("/api/expenses", expenseRoutes);
 app.use("/api/payment", paymentRoutes);
