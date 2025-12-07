@@ -221,7 +221,7 @@ function Home() {
         ))}
       </ul>
 
-      {totalPages && (
+      {totalPages ? (
         <nav className="flex justify-center mt-6">
           <ul className="flex space-x-2">
             <li>
@@ -260,7 +260,7 @@ function Home() {
             </li>
           </ul>
         </nav>
-      )}
+      ): ""}
     </section>
   );
 }
